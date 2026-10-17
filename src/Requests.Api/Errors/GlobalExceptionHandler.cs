@@ -6,7 +6,7 @@ namespace Requests.Api.Errors;
 /// Turns exceptions into ProblemDetails. Malformed requests become 400; anything else becomes 500.
 /// The exception itself goes to the log only; <see cref="ErrorMapping"/> fills in code and detail.
 /// </summary>
-public sealed class GlobalExceptionHandler(
+public class GlobalExceptionHandler(
     IProblemDetailsService problemDetailsService,
     ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {

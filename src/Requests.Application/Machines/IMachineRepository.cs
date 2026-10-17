@@ -2,10 +2,10 @@ using Requests.Domain.Machines;
 
 namespace Requests.Application.Machines;
 
-/// <summary>Stores machines. Implementations store and return copies.</summary>
+/// <summary>Stores machines.</summary>
 public interface IMachineRepository
 {
-    Task SaveAsync(VendingMachine machine, CancellationToken cancellationToken);
+    Task AddAsync(VendingMachine machine, CancellationToken cancellationToken);
 
     Task<VendingMachine?> FindByIdAsync(string id, CancellationToken cancellationToken);
 }

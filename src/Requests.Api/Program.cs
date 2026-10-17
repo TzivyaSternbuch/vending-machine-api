@@ -19,6 +19,8 @@ builder.Services.Configure<RouteHandlerOptions>(o => o.ThrowOnBadRequest = true)
 
 var app = builder.Build();
 
+app.Services.InitializeDatabase();
+
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 

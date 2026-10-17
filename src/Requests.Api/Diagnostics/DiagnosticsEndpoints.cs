@@ -38,5 +38,5 @@ public static class DiagnosticsEndpoints
         _ => Result.Failure<string>(Error.NotFound("diagnostics.unknown_category", $"Unknown diagnostic category '{category}'.")),
     };
 
-    public sealed record EchoBody(string Text);
+    public record EchoBody(string Text);
 }

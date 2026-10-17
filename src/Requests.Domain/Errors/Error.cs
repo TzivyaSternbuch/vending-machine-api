@@ -7,7 +7,7 @@ public enum ErrorType { Validation, NotFound, Conflict }
 /// An expected business failure. <see cref="Code"/> is a stable "&lt;area&gt;.&lt;reason&gt;" string
 /// (e.g. "request.not_found") that clients may branch on; once published it never changes meaning.
 /// </summary>
-public sealed record Error(string Code, string Message, ErrorType Type)
+public record Error(string Code, string Message, ErrorType Type)
 {
     public static Error Validation(string code, string message) => new(code, message, ErrorType.Validation);
 

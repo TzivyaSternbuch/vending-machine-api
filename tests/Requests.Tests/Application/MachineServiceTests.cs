@@ -2,22 +2,28 @@ using Microsoft.Extensions.Time.Testing;
 using Requests.Application.Exceptions;
 using Requests.Application.Machines;
 using Requests.Infrastructure.Machines;
+using Requests.Tests.Infrastructure;
 
 namespace Requests.Tests.Application;
 
-public class MachineServiceTests
+public class MachineServiceTests : IDisposable
 {
     private static readonly DateTimeOffset Now = new(2026, 10, 15, 10, 0, 0, TimeSpan.Zero);
 
-    private readonly InMemoryMachineRepository _repository = new();
+    private readonly TestDatabase _database = new();
+
+    private readonly MachineRepository _repository;
 
     private readonly MachineService _service;
 
     public MachineServiceTests()
     {
+        _repository = new MachineRepository(_database.CreateContext());
         var validator = new MachineValidator(new MachineSettings());
         _service = new MachineService(_repository, validator, new FakeTimeProvider(Now));
     }
+
+    public void Dispose() => _database.Dispose();
 
     [Fact]
     public async Task Create_with_every_field_stores_and_returns_machine()

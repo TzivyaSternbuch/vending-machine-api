@@ -36,7 +36,7 @@ public class Result
     public static Result<T> Failure<T>(Error error) => Result<T>.Failure(error);
 }
 
-public sealed class Result<T> : Result
+public class Result<T> : Result
 {
     private readonly T? _value;
 

@@ -21,21 +21,4 @@ public class VendingMachine
     public required string CreatedBy { get; init; }
 
     public required string UpdatedBy { get; set; }
-
-    /// <summary>
-    /// A copy that shares no mutable state with this machine. Used only by the in-memory repository
-    /// to keep its stored objects isolated; a real database doesn't need it.
-    /// </summary>
-    public VendingMachine Copy() => new()
-    {
-        Id = Id,
-        Name = Name,
-        Location = Location,
-        MaxShelves = MaxShelves,
-        Shelves = [.. Shelves],
-        CreatedAt = CreatedAt,
-        UpdatedAt = UpdatedAt,
-        CreatedBy = CreatedBy,
-        UpdatedBy = UpdatedBy,
-    };
 }

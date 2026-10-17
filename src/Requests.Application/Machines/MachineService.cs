@@ -35,7 +35,7 @@ public class MachineService(
             UpdatedBy = userId,
         };
 
-        await repository.SaveAsync(machine, cancellationToken);
+        await repository.AddAsync(machine, cancellationToken);
 
         return ToResponse(machine);
     }
