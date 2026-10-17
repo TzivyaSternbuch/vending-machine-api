@@ -32,8 +32,8 @@ public class AdminOnlyTests : IDisposable
         var createResponse = await SendAsync(HttpMethod.Post, "/machines", VALID_BODY, userId, role);
         var getResponse = await SendAsync(HttpMethod.Get, "/machines/any-id", null, userId, role);
 
-        Assert.Equal(HttpStatusCode.Unauthorized, createResponse.StatusCode);
-        Assert.Equal(HttpStatusCode.Unauthorized, getResponse.StatusCode);
+        await ErrorAssert.HasErrorAsync(createResponse, HttpStatusCode.Unauthorized, "Unauthorized");
+        await ErrorAssert.HasErrorAsync(getResponse, HttpStatusCode.Unauthorized, "Unauthorized");
     }
 
     [Theory]
@@ -44,8 +44,8 @@ public class AdminOnlyTests : IDisposable
         var createResponse = await SendAsync(HttpMethod.Post, "/machines", VALID_BODY, "user-7", role);
         var getResponse = await SendAsync(HttpMethod.Get, "/machines/any-id", null, "user-7", role);
 
-        Assert.Equal(HttpStatusCode.Forbidden, createResponse.StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, getResponse.StatusCode);
+        await ErrorAssert.HasErrorAsync(createResponse, HttpStatusCode.Forbidden, "Forbidden");
+        await ErrorAssert.HasErrorAsync(getResponse, HttpStatusCode.Forbidden, "Forbidden");
     }
 
     [Fact]

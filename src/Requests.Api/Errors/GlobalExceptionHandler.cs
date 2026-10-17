@@ -1,37 +1,49 @@
+using System.Net;
 using Microsoft.AspNetCore.Diagnostics;
+using Requests.Application.Exceptions;
 
 namespace Requests.Api.Errors;
 
 /// <summary>
-/// Turns exceptions into ProblemDetails. Malformed requests become 400; anything else becomes 500.
-/// The exception itself goes to the log only; <see cref="ErrorMapping"/> fills in code and detail.
+/// Turns exceptions into <see cref="ErrorResponse"/> bodies: validation 400, not found 404,
+/// malformed request 400, anything else 500. A 500 never shows the exception; it goes to the log only.
 /// </summary>
-public class GlobalExceptionHandler(
-    IProblemDetailsService problemDetailsService,
-    ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
+public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,
         Exception exception,
         CancellationToken cancellationToken)
     {
-        int status;
-        if (exception is BadHttpRequestException)
+        switch (exception)
         {
-            logger.LogInformation(exception, "Malformed request to {Path}.", httpContext.Request.Path);
-            status = StatusCodes.Status400BadRequest;
-        }
-        else
-        {
-            logger.LogError(exception, "Unhandled exception for {Method} {Path}.", httpContext.Request.Method, httpContext.Request.Path);
-            status = StatusCodes.Status500InternalServerError;
+            case ValidationException validation:
+                var response = ErrorResponses.Create(HttpStatusCode.BadRequest, validation.Message);
+                response.Error.Details.Add(new ErrorDetail { Field = validation.Field, Issue = validation.Issue });
+                await ErrorResponses.WriteAsync(httpContext, HttpStatusCode.BadRequest, response);
+                break;
+
+            case NotFoundException notFound:
+                await ErrorResponses.WriteAsync(
+                    httpContext,
+                    HttpStatusCode.NotFound,
+                    ErrorResponses.Create(HttpStatusCode.NotFound, notFound.Message));
+                break;
+
+            case BadHttpRequestException:
+                logger.LogInformation(exception, "Malformed request to {Path}.", httpContext.Request.Path);
+                await ErrorResponses.WriteAsync(httpContext, HttpStatusCode.BadRequest, ErrorResponses.Create(HttpStatusCode.BadRequest));
+                break;
+
+            default:
+                logger.LogError(exception, "Unhandled exception for {Method} {Path}.", httpContext.Request.Method, httpContext.Request.Path);
+                await ErrorResponses.WriteAsync(
+                    httpContext,
+                    HttpStatusCode.InternalServerError,
+                    ErrorResponses.Create(HttpStatusCode.InternalServerError));
+                break;
         }
 
-        httpContext.Response.StatusCode = status;
-        return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
-        {
-            HttpContext = httpContext,
-            ProblemDetails = { Status = status },
-        });
+        return true;
     }
 }

@@ -42,14 +42,12 @@ public class GetMachineTests : IDisposable
     }
 
     [Fact]
-    public async Task Get_with_unknown_id_fails()
+    public async Task Get_with_unknown_id_returns_404()
     {
         var response = await _client.GetAsync("/machines/missing");
 
-        //todo: The service throws NotFoundException. It is not mapped to 404 yet (separate error-handling task),
-        // The service throws NotFoundException. It is not mapped to 404 yet (separate error-handling task),
-        // so it reaches the global exception handler as 500. Change to NotFound when the mapping lands.
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        var error = await ErrorAssert.HasErrorAsync(response, HttpStatusCode.NotFound, "NotFound");
+        Assert.Equal("Machine 'missing' was not found.", error.GetProperty("message").GetString());
     }
 
     public void Dispose()

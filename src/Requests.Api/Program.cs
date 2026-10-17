@@ -1,5 +1,4 @@
-using Requests.Api.Diagnostics;
-using Requests.Api.Errors;
+﻿using Requests.Api.Errors;
 using Requests.Application;
 using Requests.Infrastructure;
 
@@ -8,9 +7,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(o =>
+    {
+        o.InvalidModelStateResponseFactory = ErrorResponses.InvalidModelState;
+        o.SuppressMapClientErrors = true;
+    });
 
-builder.Services.AddProblemDetails(o => o.CustomizeProblemDetails = ErrorMapping.AddCodeAndDefaults);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 // Bad JSON or parameter binding throws BadHttpRequestException in every environment,
@@ -21,15 +24,10 @@ var app = builder.Build();
 
 app.Services.InitializeDatabase();
 
-app.UseExceptionHandler();
-app.UseStatusCodePages();
+app.UseExceptionHandler(_ => { });
+app.UseStatusCodePages(ErrorResponses.WriteStatusCodePageAsync);
 
 app.MapControllers();
-
-if (app.Environment.IsEnvironment(DiagnosticsEndpoints.EnvironmentName))
-{
-    app.MapDiagnosticsEndpoints();
-}
 
 app.Run();
 

@@ -1,6 +1,6 @@
 # Requests API
 
-.NET 8 Web API. T0 is the skeleton: solution layout, domain error model and one error format for every failure.
+.NET 8 Web API. T0 is the skeleton: solution layout and one error format for every failure.
 
 ## Commands
 
@@ -14,7 +14,7 @@ Warnings fail the build (`TreatWarningsAsErrors` in `Directory.Build.props`).
 
 ## Layout
 
-- `src/Requests.Domain` – entities, business rules, `Error` / `ErrorType` / `Result`. References nothing.
+- `src/Requests.Domain` – entities and business rules. References nothing.
 - `src/Requests.Application` – use cases and the interfaces they need.
 - `src/Requests.Infrastructure` – implementations of Application interfaces.
 - `src/Requests.Api` – HTTP only: endpoints, error mapping, exception handling.
@@ -22,19 +22,25 @@ Warnings fail the build (`TreatWarningsAsErrors` in `Directory.Build.props`).
 
 ## Errors
 
-Expected failures return `Result.Failure(Error.X("<area>.<reason>", message))`; they never throw.
-`Requests.Api/Errors/ResultExtensions.cs` is the only place that maps an `ErrorType` to a status code.
+Services throw `ValidationException(field, issue)` or `NotFoundException(message)` (`Requests.Application/Exceptions`).
+`Requests.Api/Errors/GlobalExceptionHandler.cs` maps them to status codes; status code pages cover responses with no body.
 
-Every error response is RFC 7807 ProblemDetails (`application/problem+json`) with an extra `code`:
+Every error response is `application/json` in one shape. `code` is the `HttpStatusCode` name; `message` is the
+exception's message for validation and not found, otherwise the standard reason phrase (e.g. "Not Found"):
 
-| Source                          | Status | Code                       |
-| ------------------------------- | ------ | -------------------------- |
-| `ErrorType.Validation`          | 400    | from the `Error`           |
-| `ErrorType.NotFound`            | 404    | from the `Error`           |
-| `ErrorType.Conflict`            | 409    | from the `Error`           |
-| Unknown route                   | 404    | `route.not_found`          |
-| Wrong HTTP method               | 405    | `route.method_not_allowed` |
-| Malformed JSON / bad binding    | 400    | `request.malformed`        |
-| Unhandled exception             | 500    | `server.unexpected`        |
+```json
+{ "error": { "code": "BadRequest", "message": "name is required", "details": [ { "field": "name", "issue": "is required" } ] } }
+```
 
-500 responses always say "An unexpected error occurred."; the exception goes to the log, linked by `traceId`.
+| Source                                  | Status | Code                  |
+| --------------------------------------- | ------ | --------------------- |
+| `ValidationException`                   | 400    | `BadRequest`          |
+| Malformed JSON / bad binding            | 400    | `BadRequest`          |
+| Missing `X-User-Id` / `X-User-Role`     | 401    | `Unauthorized`        |
+| Role is not `admin`                     | 403    | `Forbidden`           |
+| `NotFoundException` / unknown route     | 404    | `NotFound`            |
+| Wrong HTTP method                       | 405    | `MethodNotAllowed`    |
+| Unhandled exception                     | 500    | `InternalServerError` |
+
+`details` is always an array; only `ValidationException` fills it. A 500 never shows the
+exception; it goes to the log only.

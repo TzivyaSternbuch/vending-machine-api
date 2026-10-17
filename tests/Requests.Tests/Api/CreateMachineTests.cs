@@ -91,7 +91,7 @@ public class CreateMachineTests : IDisposable
             { "name": "Riverside Snacks", "location": { "region": "Riverside Market", "zipCode": "10001" }, "maxShelves": {{maxShelves}} }
             """);
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await ErrorAssert.HasErrorAsync(response, HttpStatusCode.BadRequest, "BadRequest");
     }
 
     [Theory]
@@ -101,7 +101,29 @@ public class CreateMachineTests : IDisposable
     {
         var response = await PostAsync(body);
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await ErrorAssert.HasErrorAsync(response, HttpStatusCode.BadRequest, "BadRequest");
+    }
+
+    [Theory]
+    [InlineData("""{ "name": "", "location": { "region": "Riverside Market", "zipCode": "10001" } }""", "name", "is required")]
+    [InlineData("""{ "name": "   ", "location": { "region": "Riverside Market", "zipCode": "10001" } }""", "name", "is required")]
+    [InlineData("""{ "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "location": { "region": "Riverside Market", "zipCode": "10001" } }""", "name", "must be at most 64 characters")]
+    [InlineData("""{ "name": "Riverside Snacks" }""", "location", "is required")]
+    [InlineData("""{ "name": "Riverside Snacks", "location": { "region": "Riverside Market" } }""", "location.zipCode", "is required")]
+    [InlineData("""{ "name": "Riverside Snacks", "location": { "region": "Riverside Market", "zipCode": "1234" } }""", "location.zipCode", "must be 5 to 10 digits")]
+    [InlineData("""{ "name": "Riverside Snacks", "location": { "region": "Riverside Market", "zipCode": "12345678901" } }""", "location.zipCode", "must be 5 to 10 digits")]
+    [InlineData("""{ "name": "Riverside Snacks", "location": { "region": "Riverside Market", "zipCode": "1000A" } }""", "location.zipCode", "must be 5 to 10 digits")]
+    [InlineData("""{ "name": "Riverside Snacks", "location": { "region": "Riverside Market", "zipCode": "10001" }, "maxShelves": 0 }""", "maxShelves", "must be between 1 and 20")]
+    [InlineData("""{ "name": "Riverside Snacks", "location": { "region": "Riverside Market", "zipCode": "10001" }, "maxShelves": 21 }""", "maxShelves", "must be between 1 and 20")]
+    public async Task Invalid_machine_returns_400_with_field_and_issue(string body, string expectedField, string expectedIssue)
+    {
+        var response = await PostAsync(body);
+
+        var error = await ErrorAssert.HasErrorAsync(response, HttpStatusCode.BadRequest, "BadRequest");
+        Assert.Equal($"{expectedField} {expectedIssue}", error.GetProperty("message").GetString());
+        var detail = Assert.Single(error.GetProperty("details").EnumerateArray());
+        Assert.Equal(expectedField, detail.GetProperty("field").GetString());
+        Assert.Equal(expectedIssue, detail.GetProperty("issue").GetString());
     }
 
     public void Dispose()
