@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Requests.Application.Auth;
 using Requests.Application.Machines;
 
 namespace Requests.Application;
@@ -16,6 +17,7 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<MachineValidator>();
         services.AddScoped<MachineService>();
+        services.AddScoped<AuthService>();
 
         return services;
     }

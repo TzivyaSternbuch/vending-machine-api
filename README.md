@@ -20,6 +20,36 @@ Warnings fail the build (`TreatWarningsAsErrors` in `Directory.Build.props`).
 - `src/Requests.Api` – HTTP only: endpoints, error mapping, exception handling.
 - `tests/Requests.Tests` – unit tests and in-memory API tests (xUnit + `WebApplicationFactory`).
 
+## Trying it in Swagger
+
+1. `dotnet run --project src/Requests.Api` and open http://localhost:5080/swagger.
+2. `POST /auth/login` with `{ "username": "admin" }` (or `"user"`) and copy `accessToken` from the response.
+3. Click **Authorize**, paste the token, and click **Authorize** again.
+4. Call `POST /machines` and `GET /machines/{id}`. Admin gets 201 / 200, user gets 403, no token gets 401.
+
+| Username | Role    |
+| -------- | ------- |
+| `admin`  | `admin` |
+| `user`   | `user`  |
+
+The accounts are seeded into the in-memory database at startup (`Requests.Infrastructure/Users/UserSeed.cs`).
+
+## Authentication
+
+`POST /auth/login` (`{ "username" }`) returns `{ "accessToken", "expiresAt" }`; a token lasts one hour. This is
+a test login: there are no passwords, so anyone who knows a username gets its token. An unknown username gets 401.
+
+Every `/machines` endpoint needs `Authorization: Bearer <accessToken>`. A token must be HS256-signed with
+`JWT_SIGNING_KEY`, have issuer `JWT_ISSUER` and audience `JWT_AUDIENCE`, not be expired, and carry:
+
+| Claim  | Meaning                                              |
+| ------ | ---------------------------------------------------- |
+| `sub`  | user id, recorded as `createdBy` / `updatedBy`       |
+| `role` | must be `admin`                                      |
+
+All three settings are in `appsettings.json`, so the API runs as-is. The signing key there is a public test
+key; a real deployment overrides it with the `JWT_SIGNING_KEY` environment variable (at least 32 characters).
+
 ## Errors
 
 Services throw `ValidationException(field, issue)` or `NotFoundException(message)` (`Requests.Application/Exceptions`).
@@ -32,15 +62,16 @@ exception's message for validation and not found, otherwise the standard reason 
 { "error": { "code": "BadRequest", "message": "name is required", "details": [ { "field": "name", "issue": "is required" } ] } }
 ```
 
-| Source                                  | Status | Code                  |
-| --------------------------------------- | ------ | --------------------- |
-| `ValidationException`                   | 400    | `BadRequest`          |
-| Malformed JSON / bad binding            | 400    | `BadRequest`          |
-| Missing `X-User-Id` / `X-User-Role`     | 401    | `Unauthorized`        |
-| Role is not `admin`                     | 403    | `Forbidden`           |
-| `NotFoundException` / unknown route     | 404    | `NotFound`            |
-| Wrong HTTP method                       | 405    | `MethodNotAllowed`    |
-| Unhandled exception                     | 500    | `InternalServerError` |
+| Source                                    | Status | Code                  |
+| ----------------------------------------- | ------ | --------------------- |
+| `ValidationException`                     | 400    | `BadRequest`          |
+| Malformed JSON / bad binding              | 400    | `BadRequest`          |
+| Missing / invalid bearer token, no `sub`  | 401    | `Unauthorized`        |
+| `UnauthorizedException` (wrong login)     | 401    | `Unauthorized`        |
+| Role is not `admin`                       | 403    | `Forbidden`           |
+| `NotFoundException` / unknown route       | 404    | `NotFound`            |
+| Wrong HTTP method                         | 405    | `MethodNotAllowed`    |
+| Unhandled exception                       | 500    | `InternalServerError` |
 
 `details` is always an array; only `ValidationException` fills it. A 500 never shows the
 exception; it goes to the log only.

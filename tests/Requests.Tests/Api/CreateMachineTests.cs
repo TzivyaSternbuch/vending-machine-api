@@ -23,8 +23,7 @@ public class CreateMachineTests : IDisposable
     public CreateMachineTests()
     {
         _client = _factory.CreateClient();
-        _client.DefaultRequestHeaders.Add("X-User-Id", "admin-42");
-        _client.DefaultRequestHeaders.Add("X-User-Role", "admin");
+        _client.DefaultRequestHeaders.Authorization = TestTokens.Admin("admin-42");
     }
 
     [Fact]

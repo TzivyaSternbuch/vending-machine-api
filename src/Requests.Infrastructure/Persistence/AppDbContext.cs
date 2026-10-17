@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Requests.Domain.Machines;
+using Requests.Domain.Users;
 
 namespace Requests.Infrastructure.Persistence;
 
@@ -8,6 +9,8 @@ namespace Requests.Infrastructure.Persistence;
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<VendingMachine> Machines => Set<VendingMachine>();
+
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -23,6 +26,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             // Shelf has no fields yet; it gets a table when the shelves feature lands.
             machine.Ignore(m => m.Shelves);
+        });
+
+        modelBuilder.Entity<User>(user =>
+        {
+            user.HasKey(u => u.Id);
+            user.HasIndex(u => u.Username).IsUnique();
         });
     }
 }

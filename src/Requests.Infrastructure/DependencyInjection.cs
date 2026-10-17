@@ -1,9 +1,13 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Requests.Application.Auth;
 using Requests.Application.Machines;
+using Requests.Infrastructure.Auth;
 using Requests.Infrastructure.Machines;
 using Requests.Infrastructure.Persistence;
+using Requests.Infrastructure.Users;
 
 namespace Requests.Infrastructure;
 
@@ -25,14 +29,21 @@ public static class DependencyInjection
             options.UseSqlite(provider.GetRequiredService<SqliteConnection>()));
 
         services.AddScoped<IMachineRepository, MachineRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+
+        // Read when first resolved, not here, so test hosts can override the configuration.
+        services.AddSingleton(provider => JwtSettings.FromConfiguration(provider.GetRequiredService<IConfiguration>()));
+        services.AddSingleton<ITokenIssuer, JwtTokenIssuer>();
 
         return services;
     }
 
-    /// <summary>Creates the schema in the in-memory database. Call once at startup.</summary>
+    /// <summary>Creates the schema in the in-memory database and adds the test users. Call once at startup.</summary>
     public static void InitializeDatabase(this IServiceProvider services)
     {
         using var scope = services.CreateScope();
-        scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.EnsureCreated();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.EnsureCreated();
+        UserSeed.Seed(db);
     }
 }

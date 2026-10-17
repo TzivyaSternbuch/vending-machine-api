@@ -1,21 +1,20 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Requests.Api.Authorization;
 using Requests.Application.Machines;
+using Requests.Domain.Users;
 
 namespace Requests.Api.Controllers;
 
 [ApiController]
-[AdminOnly]
+[Authorize(Roles = Roles.ADMIN)]
 [Route("machines")]
 public class MachinesController(MachineService machineService) : ControllerBase
 {
     [HttpPost]
-    public async Task<ActionResult<MachineResponse>> Create(
-        CreateMachineRequest request,
-        [FromHeader(Name = AdminOnlyAttribute.USER_ID_HEADER)] string userId,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<MachineResponse>> Create(CreateMachineRequest request, CancellationToken cancellationToken)
     {
-        var machine = await machineService.CreateAsync(request, userId, cancellationToken);
+        var machine = await machineService.CreateAsync(request, User.GetUserId(), cancellationToken);
 
         return StatusCode(StatusCodes.Status201Created, machine);
     }
