@@ -25,9 +25,22 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             machine.OwnsOne(m => m.Location);
             machine.Property(m => m.CreatedAt).HasConversion(utc);
             machine.Property(m => m.UpdatedAt).HasConversion(utc);
+            machine.HasMany(m => m.Shelves)
+                .WithOne()
+                .HasForeignKey(s => s.MachineId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 
-            // Shelf has no fields yet; it gets a table when the shelves feature lands.
-            machine.Ignore(m => m.Shelves);
+        modelBuilder.Entity<Shelf>(shelf =>
+        {
+            shelf.ToTable("Shelves", table => table.HasCheckConstraint("CK_Shelves_Price", "\"Price\" > 0"));
+            shelf.HasKey(s => s.Id);
+            shelf.HasOne<ProductType>()
+                .WithMany()
+                .HasForeignKey(s => s.ProductTypeCode)
+                .OnDelete(DeleteBehavior.Restrict);
+            shelf.Property(s => s.CreatedAt).HasConversion(utc);
+            shelf.Property(s => s.UpdatedAt).HasConversion(utc);
         });
 
         modelBuilder.Entity<ProductCategory>(category =>

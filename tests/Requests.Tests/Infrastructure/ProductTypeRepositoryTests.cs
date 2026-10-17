@@ -10,6 +10,16 @@ public class ProductTypeRepositoryTests : IDisposable
     public void Dispose() => _database.Dispose();
 
     [Theory]
+    [InlineData(1, true)]
+    [InlineData(7, true)]
+    [InlineData(8, false)]
+    [InlineData(0, false)]
+    public async Task Exists_checks_the_code(int code, bool expected)
+    {
+        Assert.Equal(expected, await NewRepository().ExistsAsync(code, CancellationToken.None));
+    }
+
+    [Theory]
     [InlineData("water")]
     [InlineData("chips")]
     [InlineData("gum")]

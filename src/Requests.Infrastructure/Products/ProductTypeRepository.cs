@@ -13,6 +13,9 @@ public class ProductTypeRepository(AppDbContext db) : IProductTypeRepository
         await db.SaveChangesAsync(cancellationToken);
     }
 
+    public Task<bool> ExistsAsync(int code, CancellationToken cancellationToken) =>
+        db.ProductTypes.AnyAsync(p => p.Code == code, cancellationToken);
+
     public Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken) =>
         db.ProductTypes.AnyAsync(p => p.Name == name, cancellationToken);
 

@@ -17,6 +17,50 @@ namespace Requests.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.11");
 
+            modelBuilder.Entity("Requests.Domain.Machines.Shelf", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MachineId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("Price")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("ProductTypeCode")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MachineId");
+
+                    b.HasIndex("ProductTypeCode");
+
+                    b.ToTable("Shelves", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Shelves_Price", "\"Price\" > 0");
+                        });
+                });
+
             modelBuilder.Entity("Requests.Domain.Machines.VendingMachine", b =>
                 {
                     b.Property<string>("Id")
@@ -150,6 +194,21 @@ namespace Requests.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Requests.Domain.Machines.Shelf", b =>
+                {
+                    b.HasOne("Requests.Domain.Machines.VendingMachine", null)
+                        .WithMany("Shelves")
+                        .HasForeignKey("MachineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Requests.Domain.Products.ProductType", null)
+                        .WithMany()
+                        .HasForeignKey("ProductTypeCode")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Requests.Domain.Machines.VendingMachine", b =>
                 {
                     b.OwnsOne("Requests.Domain.Machines.Location", "Location", b1 =>
@@ -187,6 +246,11 @@ namespace Requests.Infrastructure.Persistence.Migrations
                         .HasForeignKey("CategoryCode")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Requests.Domain.Machines.VendingMachine", b =>
+                {
+                    b.Navigation("Shelves");
                 });
 #pragma warning restore 612, 618
         }
