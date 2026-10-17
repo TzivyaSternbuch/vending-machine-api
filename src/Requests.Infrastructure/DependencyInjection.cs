@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Requests.Application.Machines;
+using Requests.Application.Persistence;
 using Requests.Application.Products;
 using Requests.Infrastructure.Machines;
 using Requests.Infrastructure.Persistence;
@@ -18,6 +19,7 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>((provider, options) =>
             options.UseSqlite(provider.GetRequiredService<IConfiguration>().GetConnectionString(CONNECTION_STRING_NAME)));
 
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IMachineRepository, MachineRepository>();
         services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
         services.AddScoped<IProductTypeRepository, ProductTypeRepository>();

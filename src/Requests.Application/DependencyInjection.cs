@@ -27,6 +27,7 @@ public static class DependencyInjection
         services.AddScoped<ProductTypeValidator>();
         services.AddScoped<ProductTypeService>();
         services.AddScoped<AddShelfRequestValidator>();
+        services.AddScoped<ShelfService>();
 
         return services;
     }

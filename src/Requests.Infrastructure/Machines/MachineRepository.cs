@@ -15,4 +15,12 @@ public class MachineRepository(AppDbContext db) : IMachineRepository
 
     public Task<VendingMachine?> FindByIdAsync(string id, CancellationToken cancellationToken) =>
         db.Machines.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
+
+    public Task<VendingMachine?> FindForUpdateAsync(string id, CancellationToken cancellationToken) =>
+        db.Machines.FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
+
+    public Task<int> CountShelvesAsync(string machineId, CancellationToken cancellationToken) =>
+        db.Set<Shelf>().CountAsync(s => s.MachineId == machineId, cancellationToken);
+
+    public void AddShelf(Shelf shelf) => db.Set<Shelf>().Add(shelf);
 }
