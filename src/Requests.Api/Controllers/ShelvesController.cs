@@ -1,12 +1,14 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Requests.Api.Authorization;
 using Requests.Application.Machines;
 using Requests.Application.Shelves;
+using Requests.Domain.Users;
 
 namespace Requests.Api.Controllers;
 
 [ApiController]
-[AdminOnly]
+[Authorize(Roles = Roles.ADMIN)]
 [Route("machines/{machineId}/shelves")]
 public class ShelvesController(ShelfService shelfService) : ControllerBase
 {
@@ -14,10 +16,9 @@ public class ShelvesController(ShelfService shelfService) : ControllerBase
     public async Task<ActionResult<ShelfResponse>> Add(
         string machineId,
         AddShelfRequest request,
-        [FromHeader(Name = AdminOnlyAttribute.USER_ID_HEADER)] string userId,
         CancellationToken cancellationToken)
     {
-        var shelf = await shelfService.AddAsync(machineId, request, userId, cancellationToken);
+        var shelf = await shelfService.AddAsync(machineId, request, User.GetUserId(), cancellationToken);
 
         return StatusCode(StatusCodes.Status201Created, shelf);
     }

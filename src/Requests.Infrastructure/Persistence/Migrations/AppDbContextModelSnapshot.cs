@@ -194,6 +194,41 @@ namespace Requests.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Requests.Domain.Users.User", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "6f1c2a3e-8a4b-4d2e-9c71-0b5e3f2a1d01",
+                            Role = "admin",
+                            Username = "admin"
+                        },
+                        new
+                        {
+                            Id = "6f1c2a3e-8a4b-4d2e-9c71-0b5e3f2a1d02",
+                            Role = "user",
+                            Username = "user"
+                        });
+                });
+
             modelBuilder.Entity("Requests.Domain.Machines.Shelf", b =>
                 {
                     b.HasOne("Requests.Domain.Machines.VendingMachine", null)

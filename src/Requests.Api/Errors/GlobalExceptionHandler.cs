@@ -4,7 +4,6 @@ using Requests.Application.Exceptions;
 
 namespace Requests.Api.Errors;
 
-
 public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
@@ -32,6 +31,13 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                     httpContext,
                     HttpStatusCode.Conflict,
                     ErrorResponses.Create(HttpStatusCode.Conflict, conflict.Message));
+                break;
+
+            case UnauthorizedException unauthorized:
+                await ErrorResponses.WriteAsync(
+                    httpContext,
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponses.Create(HttpStatusCode.Unauthorized, unauthorized.Message));
                 break;
 
             case BadHttpRequestException:

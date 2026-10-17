@@ -1,11 +1,12 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Requests.Api.Authorization;
 using Requests.Application.Products;
+using Requests.Domain.Users;
 
 namespace Requests.Api.Controllers;
 
 [ApiController]
-[AdminOnly]
+[Authorize(Roles = Roles.ADMIN)]
 [Route("product-types")]
 public class ProductTypesController(ProductTypeService productTypeService) : ControllerBase
 {

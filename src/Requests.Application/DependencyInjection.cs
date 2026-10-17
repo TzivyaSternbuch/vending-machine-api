@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Requests.Application.Auth;
 using Requests.Application.Machines;
 using Requests.Application.Products;
 using Requests.Application.Shelves;
@@ -28,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<ProductTypeService>();
         services.AddScoped<AddShelfRequestValidator>();
         services.AddScoped<ShelfService>();
+        services.AddScoped<AuthService>();
 
         return services;
     }

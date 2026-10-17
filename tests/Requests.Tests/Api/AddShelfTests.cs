@@ -206,10 +206,10 @@ public class AddShelfTests : IDisposable
     }
 
     [Theory]
+    [InlineData(null, null)]
     [InlineData(null, "admin")]
-    [InlineData("admin-42", null)]
     [InlineData("", "admin")]
-    public async Task Missing_header_returns_401_before_the_body_is_read(string? userId, string? role)
+    public async Task Missing_token_or_user_id_returns_401_before_the_body_is_read(string? userId, string? role)
     {
         var response = await SendAsync(_client, HttpMethod.Post, "/machines/any-id/shelves", "{ not json", userId, role);
 
@@ -219,7 +219,8 @@ public class AddShelfTests : IDisposable
     [Theory]
     [InlineData("user")]
     [InlineData("Admin")]
-    public async Task Non_admin_returns_403_before_the_body_is_read(string role)
+    [InlineData(null)]
+    public async Task Non_admin_returns_403_before_the_body_is_read(string? role)
     {
         var response = await SendAsync(_client, HttpMethod.Post, "/machines/any-id/shelves", "{ not json", "user-7", role);
 
@@ -287,14 +288,9 @@ public class AddShelfTests : IDisposable
             request.Content = new StringContent(body, Encoding.UTF8, "application/json");
         }
 
-        if (userId is not null)
+        if (userId is not null || role is not null)
         {
-            request.Headers.Add("X-User-Id", userId);
-        }
-
-        if (role is not null)
-        {
-            request.Headers.Add("X-User-Role", role);
+            request.Headers.Authorization = TestTokens.Bearer(TestTokens.Create(userId, role));
         }
 
         return client.SendAsync(request);

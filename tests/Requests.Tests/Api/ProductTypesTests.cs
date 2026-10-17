@@ -15,8 +15,7 @@ public class ProductTypesTests : IDisposable
     public ProductTypesTests()
     {
         _client = _factory.CreateClient();
-        _client.DefaultRequestHeaders.Add("X-User-Id", "admin-42");
-        _client.DefaultRequestHeaders.Add("X-User-Role", "admin");
+        _client.DefaultRequestHeaders.Authorization = TestTokens.Admin("admin-42");
     }
 
     public void Dispose()
@@ -104,7 +103,7 @@ public class ProductTypesTests : IDisposable
     }
 
     [Fact]
-    public async Task Missing_headers_return_401_on_both_endpoints()
+    public async Task Missing_token_returns_401_on_both_endpoints()
     {
         using var client = _factory.CreateClient();
 
@@ -119,8 +118,7 @@ public class ProductTypesTests : IDisposable
     public async Task Non_admin_returns_403_on_both_endpoints()
     {
         using var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.Add("X-User-Id", "user-7");
-        client.DefaultRequestHeaders.Add("X-User-Role", "user");
+        client.DefaultRequestHeaders.Authorization = TestTokens.Bearer(TestTokens.Create("user-7", "user"));
 
         var post = await client.PostAsync("/product-types", Json("""{ "name": "lemonade", "categoryCode": 1 }"""));
         var get = await client.GetAsync("/product-types");

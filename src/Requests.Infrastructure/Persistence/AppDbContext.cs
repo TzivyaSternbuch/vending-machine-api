@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Requests.Domain.Machines;
 using Requests.Domain.Products;
+using Requests.Domain.Users;
+using Requests.Infrastructure.Users;
 
 namespace Requests.Infrastructure.Persistence;
 
@@ -13,6 +15,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ProductCategory> ProductCategories => Set<ProductCategory>();
 
     public DbSet<ProductType> ProductTypes => Set<ProductType>();
+
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -59,6 +63,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(p => p.CategoryCode)
                 .OnDelete(DeleteBehavior.Restrict);
             productType.HasData(ProductTypeSeed.ProductTypes);
+        });
+
+        modelBuilder.Entity<User>(user =>
+        {
+            user.HasKey(u => u.Id);
+            user.HasIndex(u => u.Username).IsUnique();
+            user.HasData(UserSeed.Users);
         });
     }
 }
