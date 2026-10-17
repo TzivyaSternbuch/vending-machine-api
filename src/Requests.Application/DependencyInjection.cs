@@ -1,9 +1,22 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Requests.Application.Machines;
 
 namespace Requests.Application;
 
 public static class DependencyInjection
 {
-    /// <summary>Registers use cases. Empty until the first feature lands.</summary>
-    public static IServiceCollection AddApplication(this IServiceCollection services) => services;
+    /// <summary>Registers use cases.</summary>
+    public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddSingleton(new MachineSettings
+        {
+            MaxShelvesLimit = configuration.GetValue(MachineSettings.MAX_SHELVES_LIMIT_KEY, MachineSettings.DEFAULT_MAX_SHELVES_LIMIT),
+        });
+        services.AddSingleton(TimeProvider.System);
+        services.AddScoped<MachineValidator>();
+        services.AddScoped<MachineService>();
+
+        return services;
+    }
 }

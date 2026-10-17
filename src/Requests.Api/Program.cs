@@ -5,7 +5,7 @@ using Requests.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddApplication();
+builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure();
 
 builder.Services.AddProblemDetails(o => o.CustomizeProblemDetails = ErrorMapping.AddCodeAndDefaults);
