@@ -39,6 +39,7 @@ public class MachineService(
         return ToResponse(machine);
     }
 
+//todo
     private static MachineResponse ToResponse(VendingMachine machine) => new()
     {
         Id = machine.Id,

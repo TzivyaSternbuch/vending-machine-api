@@ -8,6 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure();
 
+builder.Services.AddControllers();
+
 builder.Services.AddProblemDetails(o => o.CustomizeProblemDetails = ErrorMapping.AddCodeAndDefaults);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
@@ -19,6 +21,8 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 app.UseStatusCodePages();
+
+app.MapControllers();
 
 if (app.Environment.IsEnvironment(DiagnosticsEndpoints.EnvironmentName))
 {
