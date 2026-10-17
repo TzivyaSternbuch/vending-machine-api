@@ -10,50 +10,44 @@ public class ProductTypeRepositoryTests : IDisposable
     public void Dispose() => _database.Dispose();
 
     [Theory]
-    [InlineData("water", 1, 1)]
-    [InlineData("chips", 4, 2)]
-    [InlineData("gum", 7, 3)]
-    public async Task FindByName_returns_a_seeded_type(string name, int expectedCode, int expectedCategoryCode)
+    [InlineData("water")]
+    [InlineData("chips")]
+    [InlineData("gum")]
+    public async Task ExistsByName_is_true_for_a_seeded_type(string name)
     {
-        var found = await NewRepository().FindByNameAsync(name, CancellationToken.None);
-
-        Assert.NotNull(found);
-        Assert.Equal(expectedCode, found.Code);
-        Assert.Equal(name, found.Name);
-        Assert.Equal(expectedCategoryCode, found.CategoryCode);
+        Assert.True(await NewRepository().ExistsByNameAsync(name, CancellationToken.None));
     }
 
     [Theory]
     [InlineData("furniture")]
     [InlineData("drink")]
     [InlineData("Water")]
-    [InlineData("")]
-    public async Task FindByName_returns_null_for_an_unknown_name_or_a_category(string name)
+    public async Task ExistsByName_is_false_for_an_unknown_name_or_a_category(string name)
     {
-        Assert.Null(await NewRepository().FindByNameAsync(name, CancellationToken.None));
+        Assert.False(await NewRepository().ExistsByNameAsync(name, CancellationToken.None));
     }
 
     [Fact]
-    public async Task GetAllNames_returns_every_type_in_alphabetical_order()
+    public async Task GetAll_returns_every_type_ordered_by_code()
     {
-        var names = await NewRepository().GetAllNamesAsync(CancellationToken.None);
+        var all = await NewRepository().GetAllAsync(CancellationToken.None);
 
-        Assert.Equal(["chips", "chocolate", "cola", "gum", "juice", "pretzels", "water"], names);
+        Assert.Equal([1, 2, 3, 4, 5, 6, 7], all.Select(p => p.Code));
+        Assert.Equal("water", all[0].Name);
+        Assert.Equal(1, all[0].CategoryCode);
     }
 
     [Fact]
-    public async Task New_type_row_is_found_without_code_changes()
+    public async Task Add_gets_the_next_code_from_the_database()
     {
-        using (var db = _database.CreateContext())
-        {
-            db.ProductTypes.Add(new ProductType { Code = 8, Name = "fruit", CategoryCode = 2 });
-            await db.SaveChangesAsync();
-        }
+        var fruit = new ProductType { Name = "fruit", CategoryCode = 2 };
 
-        var repository = NewRepository();
+        await NewRepository().AddAsync(fruit, CancellationToken.None);
 
-        Assert.Equal(8, (await repository.FindByNameAsync("fruit", CancellationToken.None))?.Code);
-        Assert.Contains("fruit", await repository.GetAllNamesAsync(CancellationToken.None));
+        Assert.Equal(8, fruit.Code);
+        var all = await NewRepository().GetAllAsync(CancellationToken.None);
+        Assert.Equal("fruit", all[^1].Name);
+        Assert.Equal(2, all[^1].CategoryCode);
     }
 
     private ProductTypeRepository NewRepository() => new(_database.CreateContext());

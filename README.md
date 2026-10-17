@@ -29,7 +29,7 @@ Every test gets its own temporary SQLite file, migrated on creation and deleted 
 
 ## Errors
 
-Services throw `ValidationException(field, issue)` or `NotFoundException(message)` (`Requests.Application/Exceptions`).
+Services throw `ValidationException(field, issue)`, `NotFoundException(message)` or `ConflictException(message)` (`Requests.Application/Exceptions`).
 `Requests.Api/Errors/GlobalExceptionHandler.cs` maps them to status codes; status code pages cover responses with no body.
 
 Every error response is `application/json` in one shape. `code` is the `HttpStatusCode` name; `message` is the
@@ -47,6 +47,7 @@ exception's message for validation and not found, otherwise the standard reason 
 | Role is not `admin`                     | 403    | `Forbidden`           |
 | `NotFoundException` / unknown route     | 404    | `NotFound`            |
 | Wrong HTTP method                       | 405    | `MethodNotAllowed`    |
+| `ConflictException` (e.g. name taken)   | 409    | `Conflict`            |
 | Unhandled exception                     | 500    | `InternalServerError` |
 
 `details` is always an array; only `ValidationException` fills it. A 500 never shows the

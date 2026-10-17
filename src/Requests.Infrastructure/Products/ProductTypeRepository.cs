@@ -7,9 +7,15 @@ namespace Requests.Infrastructure.Products;
 
 public class ProductTypeRepository(AppDbContext db) : IProductTypeRepository
 {
-    public Task<ProductType?> FindByNameAsync(string name, CancellationToken cancellationToken) =>
-        db.ProductTypes.AsNoTracking().FirstOrDefaultAsync(p => p.Name == name, cancellationToken);
+    public async Task AddAsync(ProductType productType, CancellationToken cancellationToken)
+    {
+        db.ProductTypes.Add(productType);
+        await db.SaveChangesAsync(cancellationToken);
+    }
 
-    public async Task<IReadOnlyList<string>> GetAllNamesAsync(CancellationToken cancellationToken) =>
-        await db.ProductTypes.OrderBy(p => p.Name).Select(p => p.Name).ToListAsync(cancellationToken);
+    public Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken) =>
+        db.ProductTypes.AnyAsync(p => p.Name == name, cancellationToken);
+
+    public async Task<IReadOnlyList<ProductType>> GetAllAsync(CancellationToken cancellationToken) =>
+        await db.ProductTypes.AsNoTracking().OrderBy(p => p.Code).ToListAsync(cancellationToken);
 }

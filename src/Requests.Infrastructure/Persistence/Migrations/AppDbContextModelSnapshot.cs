@@ -45,12 +45,13 @@ namespace Requests.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Machines", (string)null);
+                    b.ToTable("Machines");
                 });
 
             modelBuilder.Entity("Requests.Domain.Products.ProductCategory", b =>
                 {
                     b.Property<int>("Code")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
@@ -62,7 +63,7 @@ namespace Requests.Infrastructure.Persistence.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("ProductCategories", (string)null);
+                    b.ToTable("ProductCategories");
 
                     b.HasData(
                         new
@@ -85,6 +86,7 @@ namespace Requests.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Requests.Domain.Products.ProductType", b =>
                 {
                     b.Property<int>("Code")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("CategoryCode")
@@ -101,7 +103,7 @@ namespace Requests.Infrastructure.Persistence.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("ProductTypes", (string)null);
+                    b.ToTable("ProductTypes");
 
                     b.HasData(
                         new
@@ -150,7 +152,7 @@ namespace Requests.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Requests.Domain.Machines.VendingMachine", b =>
                 {
-                    b.OwnsOne("Requests.Domain.Machines.VendingMachine.Location#Requests.Domain.Machines.Location", "Location", b1 =>
+                    b.OwnsOne("Requests.Domain.Machines.Location", "Location", b1 =>
                         {
                             b1.Property<string>("VendingMachineId")
                                 .HasColumnType("TEXT");
@@ -168,7 +170,7 @@ namespace Requests.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("VendingMachineId");
 
-                            b1.ToTable("Machines", (string)null);
+                            b1.ToTable("Machines");
 
                             b1.WithOwner()
                                 .HasForeignKey("VendingMachineId");

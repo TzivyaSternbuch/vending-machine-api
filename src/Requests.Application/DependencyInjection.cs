@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Requests.Application.Machines;
+using Requests.Application.Products;
 
 namespace Requests.Application;
 
@@ -16,6 +17,10 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<MachineValidator>();
         services.AddScoped<MachineService>();
+        services.AddScoped<ProductCategoryValidator>();
+        services.AddScoped<ProductCategoryService>();
+        services.AddScoped<ProductTypeValidator>();
+        services.AddScoped<ProductTypeService>();
 
         return services;
     }

@@ -33,7 +33,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<ProductCategory>(category =>
         {
             category.HasKey(c => c.Code);
-            category.Property(c => c.Code).ValueGeneratedNever();
             category.HasIndex(c => c.Name).IsUnique();
             category.HasData(ProductTypeSeed.ProductCategories);
         });
@@ -41,7 +40,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<ProductType>(productType =>
         {
             productType.HasKey(p => p.Code);
-            productType.Property(p => p.Code).ValueGeneratedNever();
             productType.HasIndex(p => p.Name).IsUnique();
             productType.HasOne<ProductCategory>()
                 .WithMany()

@@ -3,9 +3,8 @@ using Requests.Domain.Products;
 namespace Requests.Infrastructure.Persistence;
 
 /// <summary>
-/// Categories and product types written by the seed migration. A new type or category is a new row here
-/// plus a new migration; shelf code does not change. Codes are fixed here, never generated, so they are
-/// the same in every database.
+/// Categories and product types written by the seed migration. Their codes are fixed here so they are the
+/// same in every database; rows added later through the API get the next code from the database.
 /// </summary>
 public static class ProductTypeSeed
 {

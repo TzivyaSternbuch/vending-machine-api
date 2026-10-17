@@ -19,6 +19,7 @@ public static class DependencyInjection
             options.UseSqlite(provider.GetRequiredService<IConfiguration>().GetConnectionString(CONNECTION_STRING_NAME)));
 
         services.AddScoped<IMachineRepository, MachineRepository>();
+        services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
         services.AddScoped<IProductTypeRepository, ProductTypeRepository>();
 
         return services;
