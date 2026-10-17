@@ -1,38 +1,32 @@
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Requests.Application.Machines;
+using Requests.Application.Products;
 using Requests.Infrastructure.Machines;
 using Requests.Infrastructure.Persistence;
+using Requests.Infrastructure.Products;
 
 namespace Requests.Infrastructure;
 
 public static class DependencyInjection
 {
-    private const string IN_MEMORY_CONNECTION_STRING = "DataSource=:memory:";
+    public const string CONNECTION_STRING_NAME = "Default";
 
-    /// <summary>Registers implementations of Application interfaces and the in-memory SQLite database.</summary>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
-        services.AddSingleton(_ =>
-        {
-            var connection = new SqliteConnection(IN_MEMORY_CONNECTION_STRING);
-            connection.Open();
-            return connection;
-        });
-
         services.AddDbContext<AppDbContext>((provider, options) =>
-            options.UseSqlite(provider.GetRequiredService<SqliteConnection>()));
+            options.UseSqlite(provider.GetRequiredService<IConfiguration>().GetConnectionString(CONNECTION_STRING_NAME)));
 
         services.AddScoped<IMachineRepository, MachineRepository>();
+        services.AddScoped<IProductTypeRepository, ProductTypeRepository>();
 
         return services;
     }
 
-    /// <summary>Creates the schema in the in-memory database. Call once at startup.</summary>
     public static void InitializeDatabase(this IServiceProvider services)
     {
         using var scope = services.CreateScope();
-        scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.EnsureCreated();
+        scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
     }
 }

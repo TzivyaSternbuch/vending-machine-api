@@ -9,8 +9,15 @@
 | Build       | `dotnet build`                            |
 | Run the API | `dotnet run --project src/Requests.Api`   |
 | Run tests   | `dotnet test`                             |
+| Add a migration | `dotnet tool restore` then `dotnet ef migrations add <Name> --project src/Requests.Infrastructure --output-dir Persistence/Migrations` |
 
 Warnings fail the build (`TreatWarningsAsErrors` in `Directory.Build.props`).
+
+## Database
+
+SQLite through EF Core. The file is `ConnectionStrings:Default` in `appsettings.json` (`Data Source=vending.db`);
+pending migrations run at startup. Categories and product types are seeded by a migration (`ProductTypeSeed.cs`).
+Every test gets its own temporary SQLite file, migrated on creation and deleted after.
 
 ## Layout
 
@@ -18,7 +25,7 @@ Warnings fail the build (`TreatWarningsAsErrors` in `Directory.Build.props`).
 - `src/Requests.Application` – use cases and the interfaces they need.
 - `src/Requests.Infrastructure` – implementations of Application interfaces.
 - `src/Requests.Api` – HTTP only: endpoints, error mapping, exception handling.
-- `tests/Requests.Tests` – unit tests and in-memory API tests (xUnit + `WebApplicationFactory`).
+- `tests/Requests.Tests` – unit tests and in-process API tests (xUnit + `WebApplicationFactory`).
 
 ## Errors
 
