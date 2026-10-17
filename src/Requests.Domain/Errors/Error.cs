@@ -1,0 +1,17 @@
+namespace Requests.Domain.Errors;
+
+/// <summary>The kind of an expected failure. Says nothing about HTTP.</summary>
+public enum ErrorType { Validation, NotFound, Conflict }
+
+/// <summary>
+/// An expected business failure. <see cref="Code"/> is a stable "&lt;area&gt;.&lt;reason&gt;" string
+/// (e.g. "request.not_found") that clients may branch on; once published it never changes meaning.
+/// </summary>
+public sealed record Error(string Code, string Message, ErrorType Type)
+{
+    public static Error Validation(string code, string message) => new(code, message, ErrorType.Validation);
+
+    public static Error NotFound(string code, string message) => new(code, message, ErrorType.NotFound);
+
+    public static Error Conflict(string code, string message) => new(code, message, ErrorType.Conflict);
+}
