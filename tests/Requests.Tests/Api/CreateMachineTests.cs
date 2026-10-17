@@ -24,6 +24,7 @@ public class CreateMachineTests : IDisposable
     {
         _client = _factory.CreateClient();
         _client.DefaultRequestHeaders.Add("X-User-Id", "admin-42");
+        _client.DefaultRequestHeaders.Add("X-User-Role", "admin");
     }
 
     [Fact]
