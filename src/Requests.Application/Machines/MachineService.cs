@@ -1,3 +1,4 @@
+using Requests.Application.Exceptions;
 using Requests.Domain.Machines;
 
 namespace Requests.Application.Machines;
@@ -35,6 +36,14 @@ public class MachineService(
         };
 
         await repository.SaveAsync(machine, cancellationToken);
+
+        return ToResponse(machine);
+    }
+
+    public async Task<MachineResponse> GetByIdAsync(string id, CancellationToken cancellationToken)
+    {
+        var machine = await repository.FindByIdAsync(id, cancellationToken)
+            ?? throw new NotFoundException($"Machine '{id}' was not found.");
 
         return ToResponse(machine);
     }

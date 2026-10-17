@@ -17,4 +17,12 @@ public class MachinesController(MachineService machineService) : ControllerBase
 
         return StatusCode(StatusCodes.Status201Created, machine);
     }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<MachineResponse>> GetById(string id, CancellationToken cancellationToken)
+    {
+        var machine = await machineService.GetByIdAsync(id, cancellationToken);
+
+        return Ok(machine);
+    }
 }

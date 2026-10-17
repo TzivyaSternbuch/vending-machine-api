@@ -231,6 +231,39 @@ public class MachineServiceTests
         await AssertRejectedAsync(request, "location.description");
     }
 
+    [Fact]
+    public async Task GetById_returns_created_machine()
+    {
+        var created = await _service.CreateAsync(ValidRequest(), "admin-42", CancellationToken.None);
+
+        var found = await _service.GetByIdAsync(created.Id, CancellationToken.None);
+
+        Assert.Equal(created.Id, found.Id);
+        Assert.Equal(created.Name, found.Name);
+        Assert.Equal(created.Location.ZipCode, found.Location.ZipCode);
+        Assert.Equal(created.MaxShelves, found.MaxShelves);
+        Assert.Equal(created.CreatedAt, found.CreatedAt);
+        Assert.Equal(created.CreatedBy, found.CreatedBy);
+    }
+
+    [Fact]
+    public async Task GetById_with_unknown_id_throws_not_found()
+    {
+        await Assert.ThrowsAsync<NotFoundException>(
+            () => _service.GetByIdAsync("missing", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetById_with_unknown_id_throws_not_found_when_other_machines_exist()
+    {
+        await _service.CreateAsync(ValidRequest(), "admin-42", CancellationToken.None);
+
+        var exception = await Assert.ThrowsAsync<NotFoundException>(
+            () => _service.GetByIdAsync("missing", CancellationToken.None));
+
+        Assert.Contains("missing", exception.Message);
+    }
+
     private async Task AssertRejectedAsync(CreateMachineRequest request, string expectedField)
     {
         var exception = await Assert.ThrowsAsync<ValidationException>(
