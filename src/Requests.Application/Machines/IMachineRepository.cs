@@ -14,4 +14,6 @@ public interface IMachineRepository
     Task<int> CountShelvesAsync(string machineId, CancellationToken cancellationToken);
 
     void AddShelf(Shelf shelf);
+
+    Task<Shelf?> FindShelfAsync(string machineId, string shelfId, CancellationToken cancellationToken);
 }

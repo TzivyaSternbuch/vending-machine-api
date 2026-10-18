@@ -26,4 +26,7 @@ public class MachineRepository(AppDbContext db) : IMachineRepository
         db.Set<Shelf>().CountAsync(s => s.MachineId == machineId, cancellationToken);
 
     public void AddShelf(Shelf shelf) => db.Set<Shelf>().Add(shelf);
+
+    public Task<Shelf?> FindShelfAsync(string machineId, string shelfId, CancellationToken cancellationToken) =>
+        db.Set<Shelf>().FirstOrDefaultAsync(s => s.Id == shelfId && s.MachineId == machineId, cancellationToken);
 }
