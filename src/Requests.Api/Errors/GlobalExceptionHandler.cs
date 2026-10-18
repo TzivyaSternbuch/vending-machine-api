@@ -4,10 +4,6 @@ using Requests.Application.Exceptions;
 
 namespace Requests.Api.Errors;
 
-/// <summary>
-/// Turns exceptions into <see cref="ErrorResponse"/> bodies: validation 400, not found 404,
-/// wrong credentials 401, malformed request 400, anything else 500. A 500 never shows the exception; it goes to the log only.
-/// </summary>
 public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
@@ -28,6 +24,13 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                     httpContext,
                     HttpStatusCode.NotFound,
                     ErrorResponses.Create(HttpStatusCode.NotFound, notFound.Message));
+                break;
+
+            case ConflictException conflict:
+                await ErrorResponses.WriteAsync(
+                    httpContext,
+                    HttpStatusCode.Conflict,
+                    ErrorResponses.Create(HttpStatusCode.Conflict, conflict.Message));
                 break;
 
             case UnauthorizedException unauthorized:

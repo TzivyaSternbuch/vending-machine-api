@@ -9,8 +9,15 @@
 | Build       | `dotnet build`                            |
 | Run the API | `dotnet run --project src/Requests.Api`   |
 | Run tests   | `dotnet test`                             |
+| Add a migration | `dotnet tool restore` then `dotnet ef migrations add <Name> --project src/Requests.Infrastructure --output-dir Persistence/Migrations` |
 
 Warnings fail the build (`TreatWarningsAsErrors` in `Directory.Build.props`).
+
+## Database
+
+SQLite through EF Core. The file is `ConnectionStrings:Default` in `appsettings.json` (`Data Source=vending.db`);
+pending migrations run at startup. Categories and product types are seeded by a migration (`ProductTypeSeed.cs`).
+Every test gets its own temporary SQLite file, migrated on creation and deleted after.
 
 ## Layout
 
@@ -18,7 +25,7 @@ Warnings fail the build (`TreatWarningsAsErrors` in `Directory.Build.props`).
 - `src/Requests.Application` – use cases and the interfaces they need.
 - `src/Requests.Infrastructure` – implementations of Application interfaces.
 - `src/Requests.Api` – HTTP only: endpoints, error mapping, exception handling.
-- `tests/Requests.Tests` – unit tests and in-memory API tests (xUnit + `WebApplicationFactory`).
+- `tests/Requests.Tests` – unit tests and in-process API tests (xUnit + `WebApplicationFactory`).
 
 ## Trying it in Swagger
 
@@ -32,14 +39,14 @@ Warnings fail the build (`TreatWarningsAsErrors` in `Directory.Build.props`).
 | `admin`  | `admin` |
 | `user`   | `user`  |
 
-The accounts are seeded into the in-memory database at startup (`Requests.Infrastructure/Users/UserSeed.cs`).
+The accounts are seeded by a migration (`Requests.Infrastructure/Users/UserSeed.cs`).
 
 ## Authentication
 
 `POST /auth/login` (`{ "username" }`) returns `{ "accessToken", "expiresAt" }`; a token lasts one hour. This is
 a test login: there are no passwords, so anyone who knows a username gets its token. An unknown username gets 401.
 
-Every `/machines` endpoint needs `Authorization: Bearer <accessToken>`. A token must be HS256-signed with
+Every `/machines`, `/product-categories` and `/product-types` endpoint needs `Authorization: Bearer <accessToken>`. A token must be HS256-signed with
 `JWT_SIGNING_KEY`, have issuer `JWT_ISSUER` and audience `JWT_AUDIENCE`, not be expired, and carry:
 
 | Claim  | Meaning                                              |
@@ -52,7 +59,7 @@ key; a real deployment overrides it with the `JWT_SIGNING_KEY` environment varia
 
 ## Errors
 
-Services throw `ValidationException(field, issue)` or `NotFoundException(message)` (`Requests.Application/Exceptions`).
+Services throw `ValidationException(field, issue)`, `NotFoundException(message)` or `ConflictException(message)` (`Requests.Application/Exceptions`).
 `Requests.Api/Errors/GlobalExceptionHandler.cs` maps them to status codes; status code pages cover responses with no body.
 
 Every error response is `application/json` in one shape. `code` is the `HttpStatusCode` name; `message` is the
@@ -71,6 +78,7 @@ exception's message for validation and not found, otherwise the standard reason 
 | Role is not `admin`                       | 403    | `Forbidden`           |
 | `NotFoundException` / unknown route       | 404    | `NotFound`            |
 | Wrong HTTP method                         | 405    | `MethodNotAllowed`    |
+| `ConflictException` (e.g. name taken)     | 409    | `Conflict`            |
 | Unhandled exception                       | 500    | `InternalServerError` |
 
 `details` is always an array; only `ValidationException` fills it. A 500 never shows the

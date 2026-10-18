@@ -1,4 +1,5 @@
 using Requests.Application.Exceptions;
+using Requests.Application.Shelves;
 using Requests.Domain.Machines;
 
 namespace Requests.Application.Machines;
@@ -60,7 +61,7 @@ public class MachineService(
             Description = machine.Location.Description,
         },
         MaxShelves = machine.MaxShelves,
-        Shelves = machine.Shelves.Select(_ => new ShelfResponse()).ToList(),
+        Shelves = machine.Shelves.Select(ShelfService.ToResponse).ToList(),
         CreatedAt = machine.CreatedAt,
         UpdatedAt = machine.UpdatedAt,
         CreatedBy = machine.CreatedBy,

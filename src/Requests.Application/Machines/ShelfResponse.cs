@@ -1,6 +1,12 @@
 namespace Requests.Application.Machines;
 
-/// <summary>A shelf in a machine response. Its fields arrive with the shelves feature.</summary>
 public class ShelfResponse
 {
+    public required string Id { get; init; }
+
+    public int ProductTypeCode { get; init; }
+
+    public int Capacity { get; init; }
+
+    public double Price { get; init; }
 }
