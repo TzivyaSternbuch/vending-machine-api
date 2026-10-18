@@ -57,14 +57,14 @@ public class AddShelfRequestValidatorTests : IDisposable
     [InlineData(1)]
     [InlineData(50)]
     [InlineData(0)]
-    [InlineData(-1)]
-    public async Task Capacity_up_to_the_limit_is_accepted_with_no_lower_bound(int capacity)
+    public async Task Capacity_from_0_to_the_limit_is_accepted(int capacity)
     {
         await _validator.ValidateAsync(Request(1, capacity, 1.5), CancellationToken.None);
     }
 
     [Theory]
     [InlineData(null, "is required")]
+    [InlineData(-1, "must be at least 0")]
     [InlineData(51, "must be at most 50")]
     public async Task Invalid_capacity_is_rejected(int? capacity, string expectedIssue)
     {

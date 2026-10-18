@@ -127,6 +127,7 @@ public class AddShelfTests : IDisposable
     [InlineData("""{ "capacity": 12, "price": 1.5 }""", "productTypeCode", "is required")]
     [InlineData("""{ "productTypeCode": null, "capacity": 12, "price": 1.5 }""", "productTypeCode", "is required")]
     [InlineData("""{ "productTypeCode": 1, "price": 1.5 }""", "capacity", "is required")]
+    [InlineData("""{ "productTypeCode": 1, "capacity": -1, "price": 1.5 }""", "capacity", "must be at least 0")]
     [InlineData("""{ "productTypeCode": 1, "capacity": 51, "price": 1.5 }""", "capacity", "must be at most 50")]
     [InlineData("""{ "productTypeCode": 1, "capacity": 12 }""", "price", "is required")]
     [InlineData("""{ "productTypeCode": 1, "capacity": 12, "price": 0 }""", "price", "must be greater than 0")]
@@ -144,9 +145,10 @@ public class AddShelfTests : IDisposable
     }
 
     [Theory]
+    [InlineData(0)]
     [InlineData(1)]
     [InlineData(50)]
-    public async Task Capacity_up_to_50_is_accepted(int capacity)
+    public async Task Capacity_from_0_to_50_is_accepted(int capacity)
     {
         var machineId = await CreateMachineAsync(_client, maxShelves: 6);
 

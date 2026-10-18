@@ -12,6 +12,8 @@ public class Shelf
 
     public double Price { get; init; }
 
+    public int Quantity { get; set; }
+
     public DateTime CreatedAt { get; init; }
 
     public required string CreatedBy { get; init; }

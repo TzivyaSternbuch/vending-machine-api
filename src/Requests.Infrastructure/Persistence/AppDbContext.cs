@@ -37,7 +37,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<Shelf>(shelf =>
         {
-            shelf.ToTable("Shelves", table => table.HasCheckConstraint("CK_Shelves_Price", "\"Price\" > 0"));
+            shelf.ToTable("Shelves", table =>
+            {
+                table.HasCheckConstraint("CK_Shelves_Price", "\"Price\" > 0");
+                table.HasCheckConstraint("CK_Shelves_Quantity", "\"Quantity\" >= 0 AND \"Quantity\" <= \"Capacity\"");
+            });
             shelf.HasKey(s => s.Id);
             shelf.HasOne<ProductType>()
                 .WithMany()

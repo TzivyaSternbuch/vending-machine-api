@@ -42,6 +42,9 @@ namespace Requests.Infrastructure.Persistence.Migrations
                     b.Property<int>("ProductTypeCode")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
@@ -58,6 +61,8 @@ namespace Requests.Infrastructure.Persistence.Migrations
                     b.ToTable("Shelves", null, t =>
                         {
                             t.HasCheckConstraint("CK_Shelves_Price", "\"Price\" > 0");
+
+                            t.HasCheckConstraint("CK_Shelves_Quantity", "\"Quantity\" >= 0 AND \"Quantity\" <= \"Capacity\"");
                         });
                 });
 

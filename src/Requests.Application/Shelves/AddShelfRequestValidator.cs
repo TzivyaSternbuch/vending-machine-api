@@ -33,6 +33,11 @@ public class AddShelfRequestValidator(IProductTypeRepository productTypes, Shelf
             throw new ValidationException("capacity", "is required");
         }
 
+        if (capacity < 0)
+        {
+            throw new ValidationException("capacity", "must be at least 0");
+        }
+
         if (capacity > settings.MaxShelfCapacity)
         {
             throw new ValidationException("capacity", $"must be at most {settings.MaxShelfCapacity}");
