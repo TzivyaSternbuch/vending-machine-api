@@ -92,5 +92,6 @@ public class ShelfService(
         ProductTypeCode = shelf.ProductTypeCode,
         Capacity = shelf.Capacity,
         Price = shelf.Price,
+        Quantity = shelf.Quantity,
     };
 }

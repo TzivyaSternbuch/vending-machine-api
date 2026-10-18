@@ -9,4 +9,6 @@ public class ShelfResponse
     public int Capacity { get; init; }
 
     public double Price { get; init; }
+
+    public int Quantity { get; init; }
 }
